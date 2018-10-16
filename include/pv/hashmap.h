@@ -53,6 +53,9 @@ PV_EXPORT
 void* pv_hashmap_insert(PvHashmap* self, void* key, void* value);
 
 PV_EXPORT
+void* pv_hashmap_get(PvHashmap* self, void const* key);
+
+PV_EXPORT
 void pv_hashmap_delete(
   PvHashmap* self,
   PvDeleter* key_deleter,

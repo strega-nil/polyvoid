@@ -1,11 +1,11 @@
-hashmap_integers = executable(
-  'hashmap-integers',
-  'hashmap-integers.c',
+hashmap_basic = executable(
+  'hashmap-basic',
+  'hashmap-basic.c',
   dependencies: polyvoid)
-test('hashmap-integers', hashmap_integers)
+test('hashmap-basic', hashmap_integers)
 
-list_integers = executable(
-  'list-integers',
-  'list-integers.c',
+list_basic = executable(
+  'list-basic',
+  'list-basic.c',
   dependencies: polyvoid)
-test('list-integers', list_integers)
+test('list-basic', list_basic)

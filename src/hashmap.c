@@ -94,6 +94,26 @@ void* pv_hashmap_insert(PvHashmap* self, void* key, void* value) {
 }
 
 PV_EXPORT
+void* pv_hashmap_get(PvHashmap* self, void const* key) {
+  size_t const hash = self->hasher(key);
+  size_t const bucket_idx = hash & MASK_OF_SIZE(self->array_length);
+  PvLinkedList const bucket = self->array[bucket_idx];
+
+  for (
+    PvLinkedListNode const* it = bucket.first;
+    it != NULL;
+    it = it->next)
+  {
+    HashmapNode const* node = it->data;
+    if (self->equals(node->key, key)) {
+      return node->value;
+    }
+  }
+
+  return NULL;
+}
+
+PV_EXPORT
 void pv_hashmap_delete(
     PvHashmap* self,
     PvDeleter* key_deleter,
