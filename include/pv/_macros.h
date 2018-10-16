@@ -5,13 +5,13 @@
   typedef struct name name;                                                    \
   struct name
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && defined(_DLL)
 #define PV_EXPORT __declspec(dllexport)
 #else
 #define PV_EXPORT
 #endif
 
-#ifdef __cplusplus
+#if defined(__cplusplus)
 #define PV_BEGIN_HEADER extern "C" {
 #define PV_END_HEADER }
 #define PV_INLINE_FUNCTION inline
