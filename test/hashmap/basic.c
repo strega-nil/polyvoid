@@ -5,15 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static size_t int_hash(void const* _integer) {
-  int const* integer = _integer;
-  return *integer;
-}
-static bool int_equals(void const* _lhs, void const* _rhs) {
-  int const* lhs = _lhs;
-  int const* rhs = _rhs;
-  return *lhs == *rhs;
-}
+#include "utils.c"
 
 int* new_int(int value) {
   int* ret = malloc(sizeof value);
