@@ -1,17 +1,23 @@
 hashmap_basic = executable(
-  'hashmap-basic',
+  'hashmap_basic',
   'hashmap/basic.c',
   dependencies: polyvoid)
-test('hashmap-basic', hashmap_basic)
+test('hashmap_basic', hashmap_basic)
 
 hashmap_reallocate = executable(
-  'hashmap-reallocate',
+  'hashmap_reallocate',
   'hashmap/reallocate.c',
   dependencies: polyvoid)
-test('hashmap-reallocate', hashmap_reallocate)
+test('hashmap_reallocate', hashmap_reallocate)
+
+hashmap_remove = executable(
+  'hashmap_remove',
+  'hashmap/remove.c',
+  dependencies: polyvoid)
+test('hashmap_remove', hashmap_remove)
 
 list_basic = executable(
-  'list-basic',
+  'list_basic',
   'list/basic.c',
   dependencies: polyvoid)
-test('list-basic', list_basic)
+test('list_basic', list_basic)
