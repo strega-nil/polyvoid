@@ -36,11 +36,6 @@ int main() {
   size_t size = pv_hashmap_size(&hm);
   if (size != 0) {
     fprintf(stderr, "pv_hashmap_size = %zu (should = 0)\n", size);
-    fprintf(
-      stderr,
-      "elements_until_reallocation: %zu\n",
-      hm.elements_until_reallocation);
-    fprintf(stderr, "length_log2: %zu\n", hm.array_length_log2);
     return 5;
   }
   return 0;

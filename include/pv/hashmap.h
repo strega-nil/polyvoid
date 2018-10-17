@@ -10,14 +10,14 @@ PV_BEGIN_HEADER
 struct PvHashmapNode;
 
 PV_DEFINE_STRUCT(PvHashmap) {
-  PvHasher* hasher;
-  PvEquals* equals;
-  size_t elements_until_reallocation;
+  PvHasher* _hasher;
+  PvEquals* _equals;
+  size_t _elements_until_reallocation;
   // log2(array_length)
   // for example, length = 32 => array_length_log2 = 5
   // if length = 0, array_length_log2 = SIZE_MAX
-  size_t array_length_log2;
-  struct PvHashmapNode** array;
+  size_t _array_length_log2;
+  struct PvHashmapNode** _array;
 };
 
 PV_EXPORT
@@ -72,9 +72,7 @@ size_t pv_hashmap_size(PvHashmap const* self);
 
 PV_EXPORT
 void pv_hashmap_delete(
-  PvHashmap* self,
-  PvDeleter* key_deleter,
-  PvDeleter* value_deleter);
+    PvHashmap* self, PvDeleter* key_deleter, PvDeleter* value_deleter);
 
 PV_END_HEADER
 

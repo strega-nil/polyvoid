@@ -1,13 +1,11 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-static inline
-size_t int_hash(void const* _integer) {
+static inline size_t int_hash(void const* _integer) {
   int const* integer = _integer;
   return *integer;
 }
-static inline
-bool int_equals(void const* _lhs, void const* _rhs) {
+static inline bool int_equals(void const* _lhs, void const* _rhs) {
   int const* lhs = _lhs;
   int const* rhs = _rhs;
   return *lhs == *rhs;
@@ -15,8 +13,7 @@ bool int_equals(void const* _lhs, void const* _rhs) {
 
 // returns false if not unique
 // returns true if unique
-static inline
-bool insert_unique(PvHashmap* hm, int key, int value) {
+static inline bool insert_unique(PvHashmap* hm, int key, int value) {
   int* key_ptr = malloc(sizeof key);
   int* value_ptr = malloc(sizeof value);
 
