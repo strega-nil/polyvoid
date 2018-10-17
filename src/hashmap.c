@@ -1,79 +1,89 @@
 #include <pv/hashmap.h>
 
-PV_DEFINE_STRUCT(HashmapNode) {
+PV_DEFINE_STRUCT(PvHashmapNode) {
   void* key;
   void* value;
+  PvHashmapNode* next;
 };
 
-#define MASK_OF_SIZE(size) ((1 << (size)) - 1)
+#define MASK(log2) ((((size_t)1) << (log2)) - 1)
+#define LENGTH(log2) (((size_t)1) << (log2))
 
 PV_EXPORT
 PvHashmap pv_hashmap_new(PvHasher* hasher, PvEquals* equals) {
   PvHashmap ret = {
     .hasher = hasher,
     .equals = equals,
-    .number_of_elements = 0,
-    .array_length = 0,
+    .elements_until_reallocation = 0,
+    .array_length_log2 = SIZE_MAX,
     .array = NULL };
 
   return ret;
 }
 
 static void reallocate_memory(PvHashmap* self) {
-  size_t const old_size = self->array_length;
-  PvLinkedList* const old_array = self->array;
   PvHasher* const hasher = self->hasher;
 
-  size_t new_size;
-  if (old_size == 0) {
-    new_size = 8;
-  } else {
-    new_size = old_size * 2;
+  size_t const old_length_log2 = self->array_length_log2;
+  PvHashmapNode** const old_array = self->array;
+
+  if (old_length_log2 == SIZE_MAX) {
+    size_t const new_length_log2 = 3;
+    PvHashmapNode** const new_array =
+        calloc(LENGTH(new_length_log2), sizeof *new_array);
+    self->array = new_array;
+    self->array_length_log2 = new_length_log2;
+    self->elements_until_reallocation = LENGTH(new_length_log2);
+    return;
   }
 
-  size_t const mask = MASK_OF_SIZE(new_size);
-  PvLinkedList* const new_array = calloc(new_size, sizeof *new_array);
+  size_t new_length_log2 = old_length_log2 + 1;
+
+  size_t const mask = MASK(new_length_log2);
+  PvHashmapNode** const new_array =
+      calloc(LENGTH(new_length_log2), sizeof *new_array);
   if (!new_array) {
     abort();
   }
 
   for (
-      PvLinkedList* list = old_array;
-      list != old_array + old_size;
+      PvHashmapNode** list = old_array;
+      list != old_array + LENGTH(old_length_log2);
       ++list) {
     for (
-        PvLinkedListNode* it = list->first;
-        it != NULL;
-        it = it->next) {
-      HashmapNode* const node = it->data;
-      size_t const bucket = hasher(node->key) & mask;
-      pv_linked_list_push(&new_array[bucket], node);
+        PvHashmapNode* node = *list;
+        node != NULL;
+        node = node->next) {
+      size_t const bucket_idx = hasher(node->key) & mask;
+      node->next = new_array[bucket_idx];
+      new_array[bucket_idx] = node;
     }
-    pv_linked_list_delete(list, pv_nothing_deleter);
   }
 
+  free(old_array);
+
   self->array = new_array;
-  self->array_length = new_size;
+  self->array_length_log2 = new_length_log2;
+  self->elements_until_reallocation = LENGTH(old_length_log2);
 }
 
 PV_EXPORT
 void* pv_hashmap_insert(PvHashmap* self, void* key, void* value) {
-  PvEquals* equals = self->equals;
+  PvEquals* const equals = self->equals;
 
-  if (self->array_length <= self->number_of_elements) {
+  if (self->elements_until_reallocation == 0) {
     reallocate_memory(self);
   }
 
   size_t hash = self->hasher(key);
-  size_t bucket_idx = hash & MASK_OF_SIZE(self->array_length);
+  size_t bucket_idx = hash & MASK(self->array_length_log2);
 
-  PvLinkedList* bucket = &self->array[bucket_idx];
+  PvHashmapNode** const bucket = &self->array[bucket_idx];
 
   for (
-      PvLinkedListNode* it = bucket->first;
-      it != NULL;
-      it = it->next) {
-    HashmapNode* node = it->data;
+      PvHashmapNode* node = *bucket;
+      node != NULL;
+      node = node->next) {
     if (equals(key, node->key)) {
       void* old_value = node->value;
       node->value = value;
@@ -81,34 +91,33 @@ void* pv_hashmap_insert(PvHashmap* self, void* key, void* value) {
     }
   }
 
-  HashmapNode* node = malloc(sizeof *node);
+  PvHashmapNode* node = malloc(sizeof *node);
   if (!node) {
     abort();
   }
   node->key = key;
   node->value = value;
+  node->next = *bucket;
+  *bucket = node;
 
-  pv_linked_list_push(bucket, node);
-  ++self->number_of_elements;
+  --self->elements_until_reallocation;
 
   return NULL;
 }
 
 PV_EXPORT
 void* pv_hashmap_get(PvHashmap* self, void const* key) {
-  PvEquals* equals = self->equals;
+  PvEquals* const equals = self->equals;
 
   size_t const hash = self->hasher(key);
-  size_t const bucket_idx = hash & MASK_OF_SIZE(self->array_length);
-  PvLinkedList const bucket = self->array[bucket_idx];
+  size_t const bucket_idx = hash & MASK(self->array_length_log2);
 
   for (
-    PvLinkedListNode const* it = bucket.first;
-    it != NULL;
-    it = it->next)
+    PvHashmapNode const* node = self->array[bucket_idx];
+    node != NULL;
+    node = node->next)
   {
-    HashmapNode const* node = it->data;
-    if (equals(node->key, key)) {
+    if (equals(key, node->key)) {
       return node->value;
     }
   }
@@ -118,27 +127,32 @@ void* pv_hashmap_get(PvHashmap* self, void const* key) {
 
 PV_EXPORT
 PvHashmapRemoveReturn pv_hashmap_remove(PvHashmap* self, void const* key) {
-  PvEquals* equals = self->equals;
+  PvEquals* const equals = self->equals;
 
   PvHashmapRemoveReturn ret = {.key = NULL, .value = NULL};
 
   size_t const hash = self->hasher(key);
-  size_t const bucket_idx = hash & MASK_OF_SIZE(self->array_length);
-  PvLinkedList* bucket = &self->array[bucket_idx];
+  size_t const bucket_idx = hash & MASK(self->array_length_log2);
 
+  PvHashmapNode* previous = NULL;
   for (
-    PvLinkedListNode* it = bucket->first;
-    it != NULL;
-    it = it->next)
+    PvHashmapNode* node = self->array[bucket_idx];
+    node != NULL;
+    node = node->next)
   {
-    HashmapNode* node = it->data;
-    if (equals(node->key, key)) {
+    if (equals(key, node->key)) {
       ret.key = node->key;
       ret.value = node->value;
-      pv_linked_list_remove(bucket, it);
+      if (!previous) {
+        self->array[bucket_idx] = node->next;
+      } else {
+        previous->next = node->next;
+      }
       free(node);
-      --self->number_of_elements;
+      ++self->elements_until_reallocation;
       return ret;
+    } else {
+      previous = node;
     }
   }
 
@@ -146,23 +160,28 @@ PvHashmapRemoveReturn pv_hashmap_remove(PvHashmap* self, void const* key) {
 }
 
 PV_EXPORT
+size_t pv_hashmap_size(PvHashmap const* self) {
+  return LENGTH(self->array_length_log2) - self->elements_until_reallocation;
+}
+
+PV_EXPORT
 void pv_hashmap_delete(
     PvHashmap* self,
     PvDeleter* key_deleter,
     PvDeleter* value_deleter) {
-  for (
-      PvLinkedList* list = self->array;
-      list != self->array + self->array_length;
-      ++list) {
-    for (
-        PvLinkedListNode* it = list->first;
-        it != NULL;
-        it = it->next) {
-      HashmapNode* node = it->data;
+  PvHashmapNode** const first = self->array;
+  PvHashmapNode** const last = self->array + LENGTH(self->array_length_log2);
+
+  for (PvHashmapNode** list = first; list != last; ++list) {
+    PvHashmapNode* node = *list;
+    while (node) {
       key_deleter(node->key);
       value_deleter(node->value);
-      free(node);
+      PvHashmapNode* old_node = node;
+      node = node->next;
+      free(old_node);
     }
-    pv_linked_list_delete(list, pv_nothing_deleter);
   }
+
+  free(first);
 }
