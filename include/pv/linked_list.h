@@ -19,7 +19,14 @@ PV_EXPORT
 PvLinkedList pv_linked_list_new(void);
 
 PV_EXPORT
-PvLinkedListNode* pv_linked_list_push(PvLinkedList* self, void* data);
+PvLinkedListNode* pv_linked_list_push_front(PvLinkedList* self, void* data);
+
+PV_EXPORT
+PvLinkedListNode* pv_linked_list_push_back(PvLinkedList* self, void* data);
+
+PV_EXPORT
+PvLinkedListNode* pv_linked_list_insert_before(
+    PvLinkedList* self, PvLinkedListNode* node, void* data);
 
 PV_EXPORT
 PvLinkedListNode* pv_linked_list_insert_after(

@@ -10,27 +10,48 @@ PvLinkedList pv_linked_list_new(void) {
 }
 
 PV_EXPORT
-PvLinkedListNode* pv_linked_list_push(PvLinkedList* self, void* data) {
+PvLinkedListNode* pv_linked_list_push_back(PvLinkedList* self, void* data) {
   PvLinkedListNode* new_node = malloc(sizeof *new_node);
   if (!new_node) {
     return NULL;
   }
-
   new_node->data = data;
 
+  PvLinkedListNode* last = self->last;
+  self->last = new_node;
+  if (!self->first) {
+    self->first = new_node;
+  }
+
+  new_node->prev = last;
+  new_node->next = NULL;
+
+  if (last) {
+    last->next = new_node;
+  }
+
+  return new_node;
+}
+
+PV_EXPORT
+PvLinkedListNode* pv_linked_list_push_front(PvLinkedList* self, void* data) {
+  PvLinkedListNode* new_node = malloc(sizeof *new_node);
+  if (!new_node) {
+    return NULL;
+  }
+  new_node->data = data;
+
+  PvLinkedListNode* first = self->first;
+  self->first = new_node;
   if (!self->last) {
-    assert(!self->first);
+    self->last = new_node;
+  }
 
-    new_node->next = new_node->prev = NULL;
-    self->first = self->last = new_node;
-  } else {
-    assert(self->first);
+  new_node->next = first;
+  new_node->prev = NULL;
 
-    PvLinkedListNode* last = self->last;
-    self->last = last->next = new_node;
-
-    new_node->prev = last;
-    new_node->next = NULL;
+  if (first) {
+    first->prev = new_node;
   }
 
   return new_node;
@@ -53,6 +74,27 @@ PvLinkedListNode* pv_linked_list_insert_after(
   new_node->prev = node;
   new_node->next = node->next;
   node->next = new_node;
+
+  return new_node;
+}
+
+PV_EXPORT
+PvLinkedListNode* pv_linked_list_insert_before(
+    PvLinkedList* self, PvLinkedListNode* node, void* data) {
+  PvLinkedListNode* new_node = malloc(sizeof *new_node);
+  if (!new_node) {
+    return NULL;
+  }
+
+  new_node->data = data;
+
+  if (self->first == node) {
+    self->first = new_node;
+  }
+
+  new_node->next = node;
+  new_node->prev = node->prev;
+  node->prev = new_node;
 
   return new_node;
 }

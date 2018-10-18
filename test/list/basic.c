@@ -3,29 +3,46 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int sum(int first, int last) {
-  int sum = 0;
-  for (; first < last; ++first) {
-    sum += first;
-  }
-  return sum;
-}
-
 int main(void) {
   PvLinkedList ll = pv_linked_list_new();
 
   for (int i = 1; i < 25; ++i) {
     int* p = malloc(sizeof i);
+    if (!p) {
+      return 1;
+    }
     *p = i;
-    pv_linked_list_push(&ll, p);
+    if (!pv_linked_list_push_back(&ll, p)) {
+      return 1;
+    }
   }
 
-  int sum_ll = 0;
-  for (PvLinkedListNode* it = ll.first; it != ll.last; it = it->next) {
-    sum_ll += *(int*)it->data;
+/*
+  for (int i = 1; i < 25; ++i) {
+    int* p = malloc(sizeof i);
+    if (!p) {
+      return 1;
+    }
+    *p = -i;
+    if (!pv_linked_list_push_front(&ll, p)) {
+      return 1;
+    }
+  }
+  */
+
+  int i = 1;
+  for (PvLinkedListNode* it = ll.first; it != NULL; it = it->next) {
+    if (*(int*)it->data != i) {
+      return 2;
+    }
+    i += 1;
+    fprintf(stderr, "hi, made it here: %d\n", i);
+  }
+  if (i != 25) {
+    return 3;
   }
 
   pv_linked_list_delete(&ll, free);
 
-  return sum_ll == sum(1, 25);
+  return 0;
 }
