@@ -6,6 +6,11 @@
 
 #include "utils.c"
 
+void abort_on_call(void* ptr) {
+  (void)ptr;
+  abort();
+}
+
 int main(void) {
   PvHashmap hm = pv_hashmap_new(int_hash, int_equals);
 
@@ -38,5 +43,7 @@ int main(void) {
     fprintf(stderr, "pv_hashmap_size = %zu (should = 0)\n", size);
     return 5;
   }
+
+  pv_hashmap_delete(&hm, abort_on_call, abort_on_call);
   return 0;
 }
