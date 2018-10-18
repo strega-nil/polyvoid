@@ -1,5 +1,7 @@
 #include <pv/hashmap.h>
 
+#include <stdint.h> // for SIZE_MAX
+
 PV_DEFINE_STRUCT(PvHashmapNode) {
   void* key;
   void* value;

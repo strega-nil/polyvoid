@@ -25,5 +25,7 @@ int main(void) {
     }
   }
 
+  pv_hashmap_delete(&hm, free, free);
+
   return 0;
 }
