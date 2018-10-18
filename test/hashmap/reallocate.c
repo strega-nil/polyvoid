@@ -5,7 +5,7 @@
 
 #include "utils.c"
 
-int main() {
+int main(void) {
   PvHashmap hm = pv_hashmap_new(int_hash, int_equals);
 
   for (int i = 0; i < 100; ++i) {

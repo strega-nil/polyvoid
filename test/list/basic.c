@@ -11,7 +11,7 @@ int sum(int first, int last) {
   return sum;
 }
 
-int main() {
+int main(void) {
   PvLinkedList ll = pv_linked_list_new();
 
   for (int i = 1; i < 25; ++i) {

@@ -16,7 +16,7 @@ int* new_int(int value) {
   return ret;
 }
 
-int main() {
+int main(void) {
   PvHashmap hm = pv_hashmap_new(int_hash, int_equals);
 
   {
