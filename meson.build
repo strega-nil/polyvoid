@@ -6,7 +6,7 @@ project(
   default_options: [
     'werror=true',
     'warning_level=3',
-    'c_std=c99',
+    'c_std=c89',
     'default_library=static'])
 
 compiler = meson.get_compiler('c').get_id()

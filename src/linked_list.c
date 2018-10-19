@@ -5,19 +5,24 @@
 
 PV_EXPORT
 PvLinkedList pv_linked_list_new(void) {
-  PvLinkedList ret = {NULL, NULL};
+  PvLinkedList ret;
+  ret.first = ret.last = NULL;
   return ret;
 }
 
 PV_EXPORT
 PvLinkedListNode* pv_linked_list_push_back(PvLinkedList* self, void* data) {
-  PvLinkedListNode* new_node = malloc(sizeof *new_node);
+  PvLinkedListNode* new_node;
+  PvLinkedListNode* last;
+
+  new_node = malloc(sizeof *new_node);
+  last = self->last;
+
   if (!new_node) {
     return NULL;
   }
   new_node->data = data;
 
-  PvLinkedListNode* last = self->last;
   self->last = new_node;
   if (!self->first) {
     self->first = new_node;
@@ -35,13 +40,17 @@ PvLinkedListNode* pv_linked_list_push_back(PvLinkedList* self, void* data) {
 
 PV_EXPORT
 PvLinkedListNode* pv_linked_list_push_front(PvLinkedList* self, void* data) {
-  PvLinkedListNode* new_node = malloc(sizeof *new_node);
+  PvLinkedListNode* new_node;
+  PvLinkedListNode* first;
+
+  new_node = malloc(sizeof *new_node);
+  first = self->first;
+
   if (!new_node) {
     return NULL;
   }
   new_node->data = data;
 
-  PvLinkedListNode* first = self->first;
   self->first = new_node;
   if (!self->last) {
     self->last = new_node;
@@ -60,7 +69,9 @@ PvLinkedListNode* pv_linked_list_push_front(PvLinkedList* self, void* data) {
 PV_EXPORT
 PvLinkedListNode* pv_linked_list_insert_after(
     PvLinkedList* self, PvLinkedListNode* node, void* data) {
-  PvLinkedListNode* new_node = malloc(sizeof *new_node);
+  PvLinkedListNode* new_node;
+
+  new_node = malloc(sizeof *new_node);
   if (!new_node) {
     return NULL;
   }
@@ -81,7 +92,9 @@ PvLinkedListNode* pv_linked_list_insert_after(
 PV_EXPORT
 PvLinkedListNode* pv_linked_list_insert_before(
     PvLinkedList* self, PvLinkedListNode* node, void* data) {
-  PvLinkedListNode* new_node = malloc(sizeof *new_node);
+  PvLinkedListNode* new_node;
+
+  new_node = malloc(sizeof *new_node);
   if (!new_node) {
     return NULL;
   }
@@ -101,32 +114,40 @@ PvLinkedListNode* pv_linked_list_insert_before(
 
 PV_EXPORT
 void* pv_linked_list_remove(PvLinkedList* self, PvLinkedListNode* node) {
+  PvLinkedListNode* prev;
+  PvLinkedListNode* next;
+  void* ret;
+
   if (self->first == node && self->last == node) {
     self->first = self->last = NULL;
   } else if (self->first == node) {
-    PvLinkedListNode* next = node->next;
+    next = node->next;
+
     self->first = next;
     next->prev = NULL;
   } else if (self->last == node) {
-    PvLinkedListNode* prev = node->prev;
+    prev = node->prev;
+
     self->last = prev;
     prev->next = NULL;
   } else {
-    PvLinkedListNode* prev = node->prev;
-    PvLinkedListNode* next = node->next;
+    prev = node->prev;
+    next = node->next;
 
     prev->next = next;
     next->prev = prev;
   }
 
-  void* ret = node->data;
+  ret = node->data;
   free(node);
   return ret;
 }
 
 PV_EXPORT
 void pv_linked_list_delete(PvLinkedList* self, PvDeleter* deleter) {
-  PvLinkedListNode* it = self->first;
+  PvLinkedListNode* it;
+
+  it = self->first;
   while (it != NULL) {
     PvLinkedListNode* cur = it;
     it = cur->next;
