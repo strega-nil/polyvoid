@@ -8,20 +8,24 @@
 int main(void) {
   PvHashmap hm = pv_hashmap_new(int_hash, int_equals);
 
-  for (int i = 0; i < 100; ++i) {
-    bool is_unique = insert_unique(&hm, i, i + 1);
-    if (!is_unique) {
-      return 1;
-    }
-  }
+  {
+    int i;
+    int* value;
 
-  for (int i = 0; i < 100; ++i) {
-    int* value = pv_hashmap_get(&hm, &i);
-    if (!value) {
-      return 2;
+    for (i = 0; i < 100; ++i) {
+      if (!insert_unique(&hm, i, i + 1)) {
+        return 1;
+      }
     }
-    if (*value != i + 1) {
-      return 3;
+
+    for (i = 0; i < 100; ++i) {
+      value = pv_hashmap_get(&hm, &i);
+      if (!value) {
+        return 2;
+      }
+      if (*value != i + 1) {
+        return 3;
+      }
     }
   }
 
