@@ -26,16 +26,16 @@ PvLinkedListNode* pv_linked_list_push_back(PvLinkedList* self, void* data);
 
 PV_EXPORT
 PvLinkedListNode* pv_linked_list_insert_before(
-    PvLinkedList* self, PvLinkedListNode* node, void* data);
+    PvLinkedList* self, PvLinkedListNode* PV_node, void* data);
 
 PV_EXPORT
 PvLinkedListNode* pv_linked_list_insert_after(
-    PvLinkedList* self, PvLinkedListNode* node, void* data);
+    PvLinkedList* self, PvLinkedListNode* PV_node, void* data);
 
 PV_EXPORT
-void* pv_linked_list_remove(PvLinkedList* self, PvLinkedListNode* node);
+void* pv_linked_list_remove(PvLinkedList* self, PvLinkedListNode* PV_node);
 
 PV_EXPORT
-void pv_linked_list_delete(PvLinkedList* self, PvDeleter* deleter);
+void pv_linked_list_delete(PvLinkedList* self, PvDeleter* PV_del);
 
-#endif // PV_LINKED_LIST_H
+#endif /* PV_LINKED_LIST_H */

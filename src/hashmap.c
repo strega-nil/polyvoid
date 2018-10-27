@@ -1,6 +1,6 @@
 #include <pv/hashmap.h>
 
-#include <stdint.h> // for SIZE_MAX
+#include <stdint.h> /* for SIZE_MAX */
 
 PV_DEFINE_STRUCT(PvHashmapNode) {
   void* key;
@@ -15,11 +15,11 @@ PV_EXPORT
 PvHashmap pv_hashmap_new(PvHasher* hasher, PvEquals* equals) {
   PvHashmap ret;
 
-  ret._hasher = hasher;
-  ret._equals = equals;
-  ret._elements_until_reallocation = 0;
-  ret._array_length_log2 = SIZE_MAX;
-  ret._array = NULL;
+  ret.PV_hasher = hasher;
+  ret.PV_equals = equals;
+  ret.PV_elements_until_reallocation = 0;
+  ret.PV_array_length_log2 = SIZE_MAX;
+  ret.PV_array = NULL;
 
   return ret;
 }
@@ -33,16 +33,16 @@ static void reallocate_memory(PvHashmap* self) {
   PvHashmapNode** old_array;
   PvHashmapNode** new_array;
 
-  hasher = self->_hasher;
-  old_length_log2 = self->_array_length_log2;
-  old_array = self->_array;
+  hasher = self->PV_hasher;
+  old_length_log2 = self->PV_array_length_log2;
+  old_array = self->PV_array;
 
   if (old_length_log2 == SIZE_MAX) {
     new_length_log2 = 3;
     new_array = calloc(LENGTH(new_length_log2), sizeof *new_array);
-    self->_array = new_array;
-    self->_array_length_log2 = new_length_log2;
-    self->_elements_until_reallocation = LENGTH(new_length_log2);
+    self->PV_array = new_array;
+    self->PV_array_length_log2 = new_length_log2;
+    self->PV_elements_until_reallocation = LENGTH(new_length_log2);
     return;
   }
 
@@ -72,9 +72,9 @@ static void reallocate_memory(PvHashmap* self) {
 
   free(old_array);
 
-  self->_array = new_array;
-  self->_array_length_log2 = new_length_log2;
-  self->_elements_until_reallocation = LENGTH(old_length_log2);
+  self->PV_array = new_array;
+  self->PV_array_length_log2 = new_length_log2;
+  self->PV_elements_until_reallocation = LENGTH(old_length_log2);
 }
 
 PV_EXPORT
@@ -84,15 +84,15 @@ void* pv_hashmap_insert(PvHashmap* self, void* key, void* value) {
   PvHashmapNode** bucket;
   PvHashmapNode* node;
 
-  equals = self->_equals;
+  equals = self->PV_equals;
 
-  if (self->_elements_until_reallocation == 0) {
+  if (self->PV_elements_until_reallocation == 0) {
     reallocate_memory(self);
   }
 
-  bucket_idx = self->_hasher(key) & MASK(self->_array_length_log2);
+  bucket_idx = self->PV_hasher(key) & MASK(self->PV_array_length_log2);
 
-  bucket = &self->_array[bucket_idx];
+  bucket = &self->PV_array[bucket_idx];
 
   for (node = *bucket; node != NULL; node = node->next) {
     if (equals(key, node->key)) {
@@ -111,7 +111,7 @@ void* pv_hashmap_insert(PvHashmap* self, void* key, void* value) {
   node->next = *bucket;
   *bucket = node;
 
-  --self->_elements_until_reallocation;
+  --self->PV_elements_until_reallocation;
 
   return NULL;
 }
@@ -121,12 +121,12 @@ void* pv_hashmap_get(PvHashmap* self, void const* key) {
   PvEquals* equals;
   size_t bucket_idx;
 
-  equals = self->_equals;
-  bucket_idx = self->_hasher(key) & MASK(self->_array_length_log2);
+  equals = self->PV_equals;
+  bucket_idx = self->PV_hasher(key) & MASK(self->PV_array_length_log2);
 
 {
   PvHashmapNode* node;
-  for (node = self->_array[bucket_idx]; node != NULL;
+  for (node = self->PV_array[bucket_idx]; node != NULL;
        node = node->next) {
     if (equals(key, node->key)) {
       return node->value;
@@ -143,27 +143,27 @@ PvHashmapRemoveReturn pv_hashmap_remove(PvHashmap* self, void const* key) {
   PvHashmapRemoveReturn ret;
   size_t bucket_idx;
 
-  equals = self->_equals;
+  equals = self->PV_equals;
 
   ret.key = ret.value = NULL;
 
-  bucket_idx = self->_hasher(key) & MASK(self->_array_length_log2);
+  bucket_idx = self->PV_hasher(key) & MASK(self->PV_array_length_log2);
 
   {
     PvHashmapNode* prev = NULL;
     PvHashmapNode* node;
-    for (node = self->_array[bucket_idx]; node != NULL;
+    for (node = self->PV_array[bucket_idx]; node != NULL;
         node = node->next) {
       if (equals(key, node->key)) {
         ret.key = node->key;
         ret.value = node->value;
         if (!prev) {
-          self->_array[bucket_idx] = node->next;
+          self->PV_array[bucket_idx] = node->next;
         } else {
           prev->next = node->next;
         }
         free(node);
-        ++self->_elements_until_reallocation;
+        ++self->PV_elements_until_reallocation;
         return ret;
       } else {
         prev = node;
@@ -176,7 +176,7 @@ PvHashmapRemoveReturn pv_hashmap_remove(PvHashmap* self, void const* key) {
 
 PV_EXPORT
 size_t pv_hashmap_size(PvHashmap const* self) {
-  return LENGTH(self->_array_length_log2) - self->_elements_until_reallocation;
+  return LENGTH(self->PV_array_length_log2) - self->PV_elements_until_reallocation;
 }
 
 PV_EXPORT
@@ -186,17 +186,18 @@ void pv_hashmap_delete(
   PvHashmapNode** last;
   PvHashmapNode** list;
 
-  first = self->_array;
-  last = first + LENGTH(self->_array_length_log2);
+  first = self->PV_array;
+  last = first + LENGTH(self->PV_array_length_log2);
 
   for (list = first; list != last; ++list) {
     PvHashmapNode* node;
+    PvHashmapNode* old_node;
 
     node = *list;
     while (node) {
       key_deleter(node->key);
       value_deleter(node->value);
-      PvHashmapNode* old_node = node;
+      old_node = node;
       node = node->next;
       free(old_node);
     }

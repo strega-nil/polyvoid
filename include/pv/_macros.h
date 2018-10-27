@@ -18,7 +18,7 @@
 #else
 #define PV_BEGIN_HEADER
 #define PV_END_HEADER
-#define PV_INLINE_FUNCTION inline static
+#define PV_INLINE_FUNCTION static
 #endif
 
-#endif // PV_MACROS_H
+#endif /* PV_MACROS_H */

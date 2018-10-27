@@ -9,13 +9,13 @@
 
 PV_BEGIN_HEADER
 
-typedef void PvDeleter(void* value);
+typedef void PvDeleter(void*);
 
 typedef size_t PvHasher(void const*);
 typedef bool PvEquals(void const*, void const*);
 
-PV_INLINE_FUNCTION
-void pv_nothing_deleter(void* __pv_parm) { (void)__pv_parm; }
+PV_EXPORT
+void pv_nothing_deleter(void*);
 
 PV_END_HEADER
 
