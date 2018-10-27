@@ -9,12 +9,6 @@ project(
     'c_std=c89',
     'default_library=static'])
 
-compiler = meson.get_compiler('c').get_id()
-if compiler == 'msvc'
-  add_project_arguments('-wd4204', language: 'c')
-endif
-
-
 polyvoid_includes = include_directories('include')
 polyvoid = declare_dependency(
   link_with: library(
