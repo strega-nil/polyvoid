@@ -6,7 +6,13 @@
   struct name
 
 #if defined(_MSC_VER) && defined(_DLL)
+
+#if defined(PV_IMPLEMENTATION)
 #define PV_EXPORT __declspec(dllexport)
+#else
+#define PV_EXPORT __declspec(dllimport)
+#endif
+
 #else
 #define PV_EXPORT
 #endif
